@@ -2,211 +2,50 @@
 <html lang="pt-Br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gerador de Voucher - MC Viagens</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f8;
-      margin: 0;
-      padding: 2rem;
-      color: #333;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
-    }
-    h1 {
-      text-align: center;
-      color: #423E8B;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-    input, select {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      margin-top: 0.25rem;
-      box-sizing: border-box;
-      font-size: 1rem;
-    }
-    .input-valor-container {
-      position: relative;
-    }
-    .input-valor-container span {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #666;
-      font-weight: bold;
-      pointer-events: none;
-    }
-    .input-valor-container input {
-      padding-left: 30px;
-    }
-    button {
-      margin-top: 2rem;
-      width: 100%;
-      padding: 0.75rem;
-      background-color: #423E8B;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #322f70;
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script src="js/app.js" defer></script>
 </head>
 <body>
   <div class="container">
     <h1>Voucher - MC Viagens</h1>
 
-    <label for="nome">Nome do Passageiro</label>
-    <input type="text" id="nome" placeholder="Digite o nome completo" />
+    <label>Nome do Passageiro</label>
+    <input type="text" id="nome" />
 
-    <label for="ida">Origem / Destino (Ida)</label>
-    <select id="ida">
-      <option value="" disabled selected>Carregando aeroportos...</option>
-    </select>
-
-    <label for="dataIda">Data e Hora (Ida)</label>
-    <input type="datetime-local" id="dataIda" />
-
-    <label for="volta">Origem / Destino (Volta)</label>
-    <select id="volta">
-      <option value="" disabled selected>Carregando aeroportos...</option>
-    </select>
-
-    <label for="dataVolta">Data e Hora (Volta)</label>
-    <input type="datetime-local" id="dataVolta" />
-
-    <label for="hotel">Hotel</label>
-    <input type="text" id="hotel" placeholder="Nome do hotel" />
-
-    <label for="checkin">Check-in / Check-out</label>
-    <input type="text" id="checkin" placeholder="Ex: 12/05/2024 - 15/05/2024" />
-
-    <label for="valor">Valor total</label>
-    <div class="input-valor-container">
-      <span>R$</span>
-      <input
-        type="text"
-        id="valor"
-        placeholder="0,00"
-        oninput="this.value = this.value.replace(/[^0-9,]/g, '')"
-      />
+    <label>Origem / Destino (Ida)</label>
+    <div class="relative">
+      <input type="text" id="ida" autocomplete="off" placeholder="Digite código, cidade ou nome do aeroporto" />
+      <div id="ida-suggestions" class="autocomplete-suggestions"></div>
     </div>
 
-    <button onclick="gerarPDF()">Gerar PDF</button>
+    <label>Data e Hora (Ida)</label>
+    <input type="datetime-local" id="dataIda" />
+
+    <label>Origem / Destino (Volta)</label>
+    <div class="relative">
+      <input type="text" id="volta" autocomplete="off" placeholder="Digite código, cidade ou nome do aeroporto" />
+      <div id="volta-suggestions" class="autocomplete-suggestions"></div>
+    </div>
+
+    <label>Data e Hora (Volta)</label>
+    <input type="datetime-local" id="dataVolta" />
+
+    <label>Hotel</label>
+    <input type="text" id="hotel" />
+
+    <label>Check-in</label>
+    <input type="date" id="checkin" />
+
+    <label>Check-out</label>
+    <input type="date" id="checkout" />
+
+    <label>Valor total (R$)</label>
+    <input type="number" min="0" step="0.01" id="valor" placeholder="0,00" />
+
+    <button id="gerarBtn">Gerar PDF</button>
   </div>
-
-  <script>
-    // Lista simplificada dos principais aeroportos brasileiros
-    const aeroportos = [
-      { code: "GRU", name: "São Paulo (Guarulhos)" },
-      { code: "CGH", name: "São Paulo (Congonhas)" },
-      { code: "GIG", name: "Rio de Janeiro (Galeão)" },
-      { code: "SDU", name: "Rio de Janeiro (Santos Dumont)" },
-      { code: "BSB", name: "Brasília" },
-      { code: "CNF", name: "Belo Horizonte (Confins)" },
-      { code: "VCP", name: "Campinas" },
-      { code: "POA", name: "Porto Alegre" },
-      { code: "REC", name: "Recife" },
-      { code: "CWB", name: "Curitiba" }
-    ];
-
-    function popularSelectAeroportos() {
-      const selectIda = document.getElementById("ida");
-      const selectVolta = document.getElementById("volta");
-
-      // Limpa opções antigas
-      selectIda.innerHTML = '<option value="" disabled selected>Selecione o aeroporto</option>';
-      selectVolta.innerHTML = '<option value="" disabled selected>Selecione o aeroporto</option>';
-
-      aeroportos.forEach(({ code, name }) => {
-        const optionText = `${code} - ${name}`;
-        const optionIda = document.createElement("option");
-        optionIda.value = optionText;
-        optionIda.textContent = optionText;
-        selectIda.appendChild(optionIda);
-
-        const optionVolta = document.createElement("option");
-        optionVolta.value = optionText;
-        optionVolta.textContent = optionText;
-        selectVolta.appendChild(optionVolta);
-      });
-    }
-
-    function formatDateTime(dateTimeStr) {
-      if (!dateTimeStr) return "";
-      const date = new Date(dateTimeStr);
-      if (isNaN(date)) return dateTimeStr;
-      // Formata como dd/mm/yyyy hh:mm
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      return `${day}/${month}/${year} ${hours}:${minutes}`;
-    }
-
-    async function gerarPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      const nome = document.getElementById("nome").value;
-      const ida = document.getElementById("ida").value;
-      const dataIdaRaw = document.getElementById("dataIda").value;
-      const dataIda = formatDateTime(dataIdaRaw);
-      const volta = document.getElementById("volta").value;
-      const dataVoltaRaw = document.getElementById("dataVolta").value;
-      const dataVolta = formatDateTime(dataVoltaRaw);
-      const hotel = document.getElementById("hotel").value;
-      const checkin = document.getElementById("checkin").value;
-      const valor = document.getElementById("valor").value;
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.setTextColor(66, 62, 139);
-      doc.text("MC VIAGENS - VOUCHER DE RESERVA", 20, 20);
-
-      doc.setFontSize(12);
-      doc.setTextColor(0);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Passageiro: ${nome}`, 20, 35);
-      doc.text(`Ida: ${ida}`, 20, 45);
-      doc.text(`Data/Hora Ida: ${dataIda}`, 20, 52);
-      doc.text(`Volta: ${volta}`, 20, 62);
-      doc.text(`Data/Hora Volta: ${dataVolta}`, 20, 69);
-      doc.text(`Hotel: ${hotel}`, 20, 79);
-      doc.text(`Check-in/out: ${checkin}`, 20, 86);
-      doc.text(`Valor total: R$ ${valor}`, 20, 96);
-
-      doc.setTextColor(120);
-      doc.setFontSize(10);
-      doc.text("Contato: mcturismoviagens@gmail.com | (11) 94860-0868", 20, 115);
-      doc.text("Rua Abílio Campos Peixe, 212 - Jardim Tietê - SP", 20, 120);
-
-      doc.save(`voucher_${nome || "MC"}.pdf`);
-    }
-
-    // Ao carregar a página, popula os selects com aeroportos
-    window.onload = () => {
-      popularSelectAeroportos();
-    };
-  </script>
 </body>
 </html>
