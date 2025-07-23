@@ -1,34 +1,42 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f4f8;
   margin: 0;
   padding: 2rem;
   color: #333;
 }
 .container {
-  max-width: 800px;
+  max-width: 700px;
   margin: auto;
   background: white;
-  padding: 2rem;
+  padding: 2rem 2.5rem;
   border-radius: 12px;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
 }
-h1 {
+h1, h2 {
   text-align: center;
   color: #423E8B;
+  margin-bottom: 1rem;
 }
 label {
   display: block;
   margin-top: 1rem;
-  font-weight: bold;
+  font-weight: 600;
+  color: #333;
 }
-input, textarea {
+input, select {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #bbb;
   border-radius: 6px;
   margin-top: 0.25rem;
+  font-size: 1rem;
   box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+input:focus, select:focus {
+  border-color: #423E8B;
+  outline: none;
 }
 button {
   margin-top: 2rem;
@@ -37,27 +45,31 @@ button {
   background-color: #423E8B;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 button:hover {
   background-color: #322f70;
 }
 .autocomplete-suggestions {
-  border: 1px solid #ccc;
-  max-height: 150px;
+  border: 1px solid #bbb;
+  max-height: 160px;
   overflow-y: auto;
   background: white;
   position: absolute;
-  z-index: 9999;
+  z-index: 1000;
   width: 100%;
   border-radius: 0 0 6px 6px;
   box-sizing: border-box;
+  font-size: 0.9rem;
 }
 .autocomplete-suggestion {
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   cursor: pointer;
+  color: #333;
 }
 .autocomplete-suggestion:hover {
   background-color: #423E8B;
@@ -65,4 +77,61 @@ button:hover {
 }
 .relative {
   position: relative;
+}
+.checkbox-container {
+  margin-top: 1rem;
+  font-weight: normal;
+  user-select: none;
+}
+.passageiro-input {
+  display: flex;
+  margin-top: 0.5rem;
+}
+.passageiro-input input {
+  flex-grow: 1;
+}
+.passageiro-input button {
+  margin-left: 0.5rem;
+  padding: 0 0.8rem;
+  background: #d9534f;
+  border-radius: 6px;
+  border: none;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.passageiro-input button:hover {
+  background: #c9302c;
+}
+#historico-vouchers {
+  margin-top: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 0.7rem 1rem;
+  border-radius: 6px;
+  background: #fafafa;
+  font-size: 0.95rem;
+}
+.voucher-entry {
+  border-bottom: 1px solid #ddd;
+  padding: 0.4rem 0;
+}
+.voucher-entry:last-child {
+  border-bottom: none;
+}
+.voucher-entry button {
+  background: #423E8B;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 6px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.voucher-entry button:hover {
+  background: #322f70;
 }
