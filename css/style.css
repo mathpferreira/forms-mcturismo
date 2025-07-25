@@ -1,75 +1,64 @@
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   background-color: #f4f4f8;
   margin: 0;
   padding: 2rem;
   color: #333;
 }
 .container {
-  max-width: 700px;
+  max-width: 800px;
   margin: auto;
   background: white;
-  padding: 2rem 2.5rem;
+  padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
 }
-h1, h2 {
+h1 {
   text-align: center;
   color: #423E8B;
-  margin-bottom: 1rem;
 }
 label {
   display: block;
   margin-top: 1rem;
-  font-weight: 600;
-  color: #333;
+  font-weight: bold;
 }
-input, select {
+input, textarea {
   width: 100%;
-  padding: 0.5rem 0.6rem;
-  border: 1px solid #bbb;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
   border-radius: 6px;
   margin-top: 0.25rem;
-  font-size: 1rem;
   box-sizing: border-box;
-  transition: border-color 0.3s ease;
-}
-input:focus, select:focus {
-  border-color: #423E8B;
-  outline: none;
 }
 button {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   width: 100%;
   padding: 0.75rem;
   background-color: #423E8B;
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background 0.2s ease;
 }
 button:hover {
   background-color: #322f70;
 }
 .autocomplete-suggestions {
-  border: 1px solid #bbb;
-  max-height: 160px;
+  border: 1px solid #ccc;
+  max-height: 150px;
   overflow-y: auto;
   background: white;
   position: absolute;
-  z-index: 1000;
+  z-index: 9999;
   width: 100%;
   border-radius: 0 0 6px 6px;
   box-sizing: border-box;
-  font-size: 0.9rem;
 }
 .autocomplete-suggestion {
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem;
   cursor: pointer;
-  color: #333;
 }
 .autocomplete-suggestion:hover {
   background-color: #423E8B;
@@ -78,60 +67,42 @@ button:hover {
 .relative {
   position: relative;
 }
-.checkbox-container {
-  margin-top: 1rem;
-  font-weight: normal;
-  user-select: none;
-}
-.passageiro-input {
-  display: flex;
-  margin-top: 0.5rem;
-}
-.passageiro-input input {
-  flex-grow: 1;
-}
-.passageiro-input button {
-  margin-left: 0.5rem;
-  padding: 0 0.8rem;
-  background: #d9534f;
-  border-radius: 6px;
-  border: none;
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-.passageiro-input button:hover {
-  background: #c9302c;
-}
-#historico-vouchers {
-  margin-top: 1rem;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  padding: 0.7rem 1rem;
+.passageiro {
+  margin-bottom: 1rem;
+  border: 1px dashed #ccc;
+  padding: 1rem;
   border-radius: 6px;
   background: #fafafa;
-  font-size: 0.95rem;
 }
-.voucher-entry {
-  border-bottom: 1px solid #ddd;
-  padding: 0.4rem 0;
+#addPassageiro {
+  background-color: #5a58a5;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
 }
-.voucher-entry:last-child {
-  border-bottom: none;
+#addPassageiro:hover {
+  background-color: #3d3b85;
 }
-.voucher-entry button {
-  background: #423E8B;
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
-  padding: 0.25rem 0.7rem;
+.erro-box {
+  background-color: #ffe0e0;
+  border: 1px solid #cc0000;
+  padding: 0.75rem;
   border-radius: 6px;
-  border: none;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  color: #cc0000;
+  font-weight: 600;
+  text-align: center;
 }
-.voucher-entry button:hover {
-  background: #322f70;
+
+.passageiro .remover {
+  margin-top: 0.5rem;
+  background-color: #eee;
+  color: #444;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+}
+.passageiro .remover:hover {
+  background-color: #ffd6d6;
+  color: #b30000;
 }

@@ -1,18 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
   let airports = {};
 
-  // --- Carregar aeroportos ---
   async function carregarAeroportos() {
     try {
       const response = await fetch('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json');
-      if (!response.ok) throw new Error('Falha ao carregar airports.json');
       airports = await response.json();
     } catch (e) {
-      console.error('Erro ao carregar arquivo de aeroportos:', e);
+      mostrarErro('Erro ao carregar dados de aeroportos.');
     }
   }
 
-  // --- Autocomplete ---
   function autocomplete(inputElem, suggestionsElem) {
     inputElem.addEventListener('input', () => {
       const val = inputElem.value.trim().toLowerCase();
@@ -54,255 +51,148 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Passageiros ---
-  const passageirosContainer = document.getElementById('passageiros-container');
-  const addPassageiroBtn = document.getElementById('add-passageiro-btn');
-
-  function criarPassageiroInput(valor = '') {
-    const div = document.createElement('div');
-    div.className = 'passageiro-input';
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Nome do passageiro';
-    input.value = valor;
-
-    const btnRemover = document.createElement('button');
-    btnRemover.type = 'button';
-    btnRemover.textContent = 'x';
-    btnRemover.title = 'Remover passageiro';
-    btnRemover.onclick = () => {
-      passageirosContainer.removeChild(div);
-    };
-
-    div.appendChild(input);
-    div.appendChild(btnRemover);
-    return div;
+  function mostrarErro(msg) {
+    const erro = document.getElementById("erro");
+    erro.innerText = msg;
+    erro.style.display = "block";
   }
 
-  function inicializarPassageiros() {
-    passageirosContainer.innerHTML = '';
-    passageirosContainer.appendChild(criarPassageiroInput());
+  function limparErro() {
+    const erro = document.getElementById("erro");
+    erro.innerText = "";
+    erro.style.display = "none";
   }
 
-  addPassageiroBtn.addEventListener('click', () => {
-    passageirosContainer.appendChild(criarPassageiroInput());
-  });
-
-  // --- Validação básica ---
   function validarCampos() {
-    const passageiros = Array.from(passageirosContainer.querySelectorAll('input'))
-      .map(i => i.value.trim())
-      .filter(Boolean);
+    const nomes = document.querySelectorAll(".nome");
+    const ida = document.getElementById("ida").value.trim();
+    const dataIda = document.getElementById("dataIda").value;
+    const dataVolta = document.getElementById("dataVolta").value;
+    const valorStr = document.getElementById("valor").value.trim().replace('R$', '').replace(',', '.');
 
-    if (passageiros.length === 0) {
-      alert('Adicione pelo menos um passageiro.');
+    for (const nomeInput of nomes) {
+      if (!nomeInput.value.trim()) {
+        mostrarErro("Por favor, preencha o nome de todos os passageiros.");
+        return false;
+      }
+    }
+    if (!ida) {
+      mostrarErro("Por favor, preencha a origem/destino da ida.");
+      return false;
+    }
+    if (!dataIda) {
+      mostrarErro("Por favor, preencha a data e hora da ida.");
+      return false;
+    }
+    if (valorStr) {
+      const valor = parseFloat(valorStr);
+      if (isNaN(valor) || valor < 0) {
+        mostrarErro("Por favor, preencha um valor total válido e positivo.");
+        return false;
+      }
+    }
+    if (dataVolta && dataIda > dataVolta) {
+      mostrarErro("A data/hora da ida não pode ser depois da volta.");
       return false;
     }
 
-    const valorStr = document.getElementById('valor').value.trim();
-    const valor = valorStr ? parseFloat(valorStr) : NaN;
-
-    if (isNaN(valor) || valor < 0) {
-      alert('Valor total inválido.');
-      return false;
-    }
-
+    limparErro();
     return true;
   }
 
-  // --- Traduções para PDF ---
-  const textos = {
-    pt: {
-      titulo: 'Voucher - MC Viagens',
-      passageiros: 'Passageiros',
-      origemDestino: 'Origem / Destino',
-      dataHora: 'Data e Hora',
-      hotel: 'Hotel',
-      checkin: 'Check-in',
-      checkout: 'Check-out',
-      valorTotal: 'Valor total (R$)',
-      hospedagemEVoo: 'Hospedagem e voo juntos',
-      vooIda: 'Voo Ida',
-      vooVolta: 'Voo Volta',
-      voucherCriadoEm: 'Voucher criado em',
-      btnBaixarPdf: 'Baixar PDF'
-    },
-    en: {
-      titulo: 'Voucher - MC Travel',
-      passageiros: 'Passengers',
-      origemDestino: 'Origin / Destination',
-      dataHora: 'Date and Time',
-      hotel: 'Hotel',
-      checkin: 'Check-in',
-      checkout: 'Check-out',
-      valorTotal: 'Total Value (R$)',
-      hospedagemEVoo: 'Hotel and flight together',
-      vooIda: 'Departure Flight',
-      vooVolta: 'Return Flight',
-      voucherCriadoEm: 'Voucher created on',
-      btnBaixarPdf: 'Download PDF'
-    }
-  };
+  async function gerarPDF() {
+    if (!validarCampos()) return;
 
-  // --- Formatar data local ---
-  function formatarDataLocal(dateStr, locale) {
-    const date = new Date(dateStr);
-    if (isNaN(date)) return '';
-    return new Intl.DateTimeFormat(locale, {
-      dateStyle: 'short',
-      timeStyle: 'short',
-      hour12: false
-    }).format(date);
-  }
-
-  // --- Salvar histórico no localStorage ---
-  function salvarHistorico(voucher) {
-    let historico = JSON.parse(localStorage.getItem('historicoVouchers') || '[]');
-    historico.push(voucher);
-    localStorage.setItem('historicoVouchers', JSON.stringify(historico));
-  }
-
-  // --- Carregar histórico ---
-  function carregarHistorico() {
-    const historicoDiv = document.getElementById('historico-vouchers');
-    historicoDiv.innerHTML = '';
-
-    let historico = JSON.parse(localStorage.getItem('historicoVouchers') || '[]');
-    if (historico.length === 0) {
-      historicoDiv.textContent = 'Nenhum voucher criado ainda.';
-      return;
-    }
-
-    historico.slice().reverse().forEach((v, i) => {
-      const div = document.createElement('div');
-      div.className = 'voucher-entry';
-
-      const dataCriado = new Date(v.criadoEm).toLocaleString();
-
-      div.innerHTML = `
-        <strong>${textos[v.idioma].titulo}</strong><br/>
-        <small>${textos[v.idioma].voucherCriadoEm}: ${dataCriado}</small><br/>
-        Passageiros: ${v.passageiros.join(', ')}<br/>
-        Valor: R$ ${v.valor.toFixed(2)}<br/>
-      `;
-
-      const btnPdf = document.createElement('button');
-      btnPdf.textContent = textos[v.idioma].btnBaixarPdf;
-      btnPdf.onclick = () => {
-        gerarPdf(v);
-      };
-
-      div.appendChild(btnPdf);
-      historicoDiv.appendChild(div);
-    });
-  }
-
-  // --- Gerar PDF ---
-  async function gerarPdf(data) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    const t = textos[data.idioma];
-    const locale = data.idioma === 'pt' ? 'pt-BR' : 'en-US';
+    const nomes = [...document.querySelectorAll(".nome")].map(el => el.value.trim());
+    const ida = document.getElementById("ida").value;
+    const dataIda = document.getElementById("dataIda").value;
+    const volta = document.getElementById("volta").value;
+    const dataVolta = document.getElementById("dataVolta").value;
+    const hotel = document.getElementById("hotel").value;
+    const checkin = document.getElementById("checkin").value;
+    const checkout = document.getElementById("checkout").value;
 
-    doc.setFontSize(20);
-    doc.text(t.titulo, 20, 20);
+    const valorRaw = parseFloat(document.getElementById("valor").value.replace('R$', '').replace(',', '.'));
+    const valorFormatado = (!isNaN(valorRaw)) ? valorRaw.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : "R$ 0,00";
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(66, 62, 139);
+    doc.text("MC VIAGENS - VOUCHER DE RESERVA", 20, 20);
 
     doc.setFontSize(12);
-    let y = 40;
-
-    doc.text(`${t.passageiros}:`, 20, y);
-    y += 8;
-    data.passageiros.forEach((p) => {
-      doc.text(`- ${p}`, 25, y);
-      y += 7;
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "normal");
+    nomes.forEach((n, i) => {
+      doc.text(`Passageiro ${i + 1}: ${n}`, 20, 35 + i * 7);
     });
 
-    y += 5;
-    doc.text(`${t.origemDestino} (Ida): ${data.ida}`, 20, y);
-    y += 8;
-    doc.text(`${t.dataHora} (Ida): ${formatarDataLocal(data.dataIda, locale)}`, 20, y);
-    y += 10;
+    const offset = 35 + nomes.length * 7 + 5;
+    doc.text(`Ida: ${ida}`, 20, offset);
+    doc.text(`Data/Hora Ida: ${dataIda}`, 20, offset + 7);
+    doc.text(`Volta: ${volta}`, 20, offset + 14);
+    doc.text(`Data/Hora Volta: ${dataVolta}`, 20, offset + 21);
+    doc.text(`Hotel: ${hotel}`, 20, offset + 31);
+    doc.text(`Check-in: ${checkin}`, 20, offset + 38);
+    doc.text(`Check-out: ${checkout}`, 20, offset + 45);
+    doc.text(`Valor total: ${valorFormatado}`, 20, offset + 55);
 
-    if (data.volta) {
-      doc.text(`${t.origemDestino} (Volta): ${data.volta}`, 20, y);
-      y += 8;
-      doc.text(`${t.dataHora} (Volta): ${formatarDataLocal(data.dataVolta, locale)}`, 20, y);
-      y += 10;
-    }
-
-    if (data.hotel) {
-      doc.text(`${t.hotel}: ${data.hotel}`, 20, y);
-      y += 8;
-      doc.text(`${t.checkin}: ${data.checkin}`, 20, y);
-      y += 8;
-      doc.text(`${t.checkout}: ${data.checkout}`, 20, y);
-      y += 10;
-    }
-
-    doc.text(`${t.valorTotal}: R$ ${data.valor.toFixed(2)}`, 20, y);
-    y += 15;
-
-    const criadoEmStr = new Date(data.criadoEm).toLocaleString(locale);
+    doc.setTextColor(120);
     doc.setFontSize(10);
-    doc.text(`${t.voucherCriadoEm}: ${criadoEmStr}`, 20, y);
+    doc.text("Contato: mcturismoviagens@gmail.com | (11) 9xxxx-xxxx", 20, offset + 65);
 
-    // Gerar e baixar PDF
-    doc.save(`voucher-${Date.now()}.pdf`);
+    doc.save('voucher.pdf');
   }
 
-  // --- Geração dos dados do voucher e download ---
-  function gerarVoucher() {
-    if (!validarCampos()) return;
-
-    const passageiros = Array.from(passageirosContainer.querySelectorAll('input'))
-      .map(i => i.value.trim())
-      .filter(Boolean);
-
-    const idioma = document.getElementById('idioma').value;
-    const ida = document.getElementById('ida').value.trim();
-    const dataIda = document.getElementById('dataIda').value;
-    const volta = document.getElementById('volta').value.trim();
-    const dataVolta = document.getElementById('dataVolta').value;
-    const hotel = document.getElementById('hotel').value.trim();
-    const checkin = document.getElementById('checkin').value;
-    const checkout = document.getElementById('checkout').value;
-    const valorStr = document.getElementById('valor').value.trim();
-    const valor = valorStr ? parseFloat(valorStr) : 0;
-
-    const voucherData = {
-      passageiros,
-      idioma,
-      ida,
-      dataIda,
-      volta,
-      dataVolta,
-      hotel,
-      checkin,
-      checkout,
-      valor,
-      criadoEm: new Date().toISOString()
-    };
-
-    salvarHistorico(voucherData);
-    carregarHistorico();
-
-    gerarPdf(voucherData);
+  function formatarMoeda(valor) {
+    const numero = parseFloat(valor.replace(/[^0-9]/g, "")) / 100;
+    if (isNaN(numero)) return "";
+    return numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  // --- Inicialização ---
-  async function init() {
-    await carregarAeroportos();
+  const valorInput = document.getElementById("valor");
+  valorInput.addEventListener("input", (e) => {
+    const cursor = e.target.selectionStart;
+    const formatado = formatarMoeda(e.target.value);
+    e.target.value = formatado;
+    e.target.setSelectionRange(cursor, cursor);
+  });
 
-    autocomplete(document.getElementById('ida'), document.getElementById('ida-suggestions'));
-    autocomplete(document.getElementById('volta'), document.getElementById('volta-suggestions'));
-
-    inicializarPassageiros();
-    carregarHistorico();
-
-    document.getElementById('gerarBtn').addEventListener('click', gerarVoucher);
+  function criarCampoPassageiro() {
+    const div = document.createElement("div");
+    div.className = "passageiro";
+    div.innerHTML = `
+      <label>Nome do Passageiro</label>
+      <input type="text" class="nome" />
+      <button type="button" class="remover">🗑️ Remover</button>
+    `;
+    div.querySelector(".remover").addEventListener("click", () => {
+      const todos = document.querySelectorAll(".passageiro");
+      if (todos.length > 1) {
+        div.remove();
+      } else {
+        mostrarErro("Pelo menos um passageiro deve ser informado.");
+      }
+    });
+    return div;
   }
 
-  init();
+  document.getElementById("addPassageiro").addEventListener("click", () => {
+    const novo = criarCampoPassageiro();
+    document.getElementById("passageiros").appendChild(novo);
+  });
+
+  // Substitui o primeiro passageiro para já ter botão de remover também
+  const primeiro = document.querySelector(".passageiro");
+  const corrigido = criarCampoPassageiro();
+  primeiro.replaceWith(corrigido);
+
+
+  carregarAeroportos();
+  autocomplete(document.getElementById("ida"), document.getElementById("ida-suggestions"));
+  autocomplete(document.getElementById("volta"), document.getElementById("volta-suggestions"));
+  document.getElementById("gerarBtn").addEventListener("click", gerarPDF);
 });
