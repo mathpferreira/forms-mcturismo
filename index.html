@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/style.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   <script src="js/app.js" defer></script>
+  <script src="https://unpkg.com/lucide@latest"></script> <!-- AQUI -->
 </head>
 <body>
   <div class="container">
@@ -14,45 +15,60 @@
 
     <div id="passageiros">
       <div class="passageiro">
-        <label>Nome do Passageiro</label>
+        <label><i data-lucide="user"></i> Nome do Passageiro</label>
         <input type="text" class="nome" />
       </div>
     </div>
-    <button id="addPassageiro">+ Adicionar Passageiro</button>
+    <button id="addPassageiro"><i data-lucide="user-plus"></i> Adicionar Passageiro</button>
 
-    <label>Origem / Destino (Ida)</label>
-    <div class="relative">
-      <input type="text" id="ida" autocomplete="off" placeholder="Digite código, cidade ou nome do aeroporto" />
-      <div id="ida-suggestions" class="autocomplete-suggestions"></div>
+    <div class="grid-2">
+      <div>
+        <label><i data-lucide="plane-departure"></i> Origem / Destino (Ida)</label>
+        <div class="relative">
+          <input type="text" id="ida" autocomplete="off" placeholder="Digite código, cidade ou aeroporto" />
+          <div id="ida-suggestions" class="autocomplete-suggestions"></div>
+        </div>
+
+        <label><i data-lucide="calendar-clock"></i> Data e Hora (Ida)</label>
+        <input type="datetime-local" id="dataIda" />
+      </div>
+
+      <div>
+        <label><i data-lucide="plane-arrival"></i> Origem / Destino (Volta)</label>
+        <div class="relative">
+          <input type="text" id="volta" autocomplete="off" placeholder="Digite código, cidade ou aeroporto" />
+          <div id="volta-suggestions" class="autocomplete-suggestions"></div>
+        </div>
+
+        <label><i data-lucide="calendar-clock"></i> Data e Hora (Volta)</label>
+        <input type="datetime-local" id="dataVolta" />
+      </div>
     </div>
 
-    <label>Data e Hora (Ida)</label>
-    <input type="datetime-local" id="dataIda" />
-
-    <label>Origem / Destino (Volta)</label>
-    <div class="relative">
-      <input type="text" id="volta" autocomplete="off" placeholder="Digite código, cidade ou nome do aeroporto" />
-      <div id="volta-suggestions" class="autocomplete-suggestions"></div>
-    </div>
-
-    <label>Data e Hora (Volta)</label>
-    <input type="datetime-local" id="dataVolta" />
-
-    <label>Hotel</label>
+    <label><i data-lucide="hotel"></i> Hotel</label>
     <input type="text" id="hotel" />
 
-    <label>Check-in</label>
-    <input type="date" id="checkin" />
+    <div class="grid-2">
+      <div>
+        <label><i data-lucide="calendar-days"></i> Check-in</label>
+        <input type="date" id="checkin" />
+      </div>
+      <div>
+        <label><i data-lucide="calendar-days"></i> Check-out</label>
+        <input type="date" id="checkout" />
+      </div>
+    </div>
 
-    <label>Check-out</label>
-    <input type="date" id="checkout" />
-
-    <label>Valor total (R$)</label>
-    <input type="text" id="valor" placeholder="R$ 0,00" />
+    <label><i data-lucide="dollar-sign"></i> Valor total (R$)</label>
+    <input type="text" id="valor" placeholder="Ex: 250.00" />
 
     <div id="erro" style="display:none;" class="erro-box"></div>
 
-    <button id="gerarBtn">Gerar PDF</button>
+    <button id="gerarBtn"><i data-lucide="file-text"></i> Gerar PDF</button>
   </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
 </body>
 </html>

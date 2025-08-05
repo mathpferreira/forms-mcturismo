@@ -142,24 +142,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     doc.setTextColor(120);
     doc.setFontSize(10);
-    doc.text("Contato: mcturismoviagens@gmail.com | (11) 9xxxx-xxxx", 20, offset + 65);
+    doc.text("Contato: mcturismoviagens@gmail.com | (11) 94860-0868", 20, offset + 65);
 
     doc.save('voucher.pdf');
   }
 
-  function formatarMoeda(valor) {
-    const numero = parseFloat(valor.replace(/[^0-9]/g, "")) / 100;
-    if (isNaN(numero)) return "";
-    return numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
-
   const valorInput = document.getElementById("valor");
+
   valorInput.addEventListener("input", (e) => {
-    const cursor = e.target.selectionStart;
-    const formatado = formatarMoeda(e.target.value);
-    e.target.value = formatado;
-    e.target.setSelectionRange(cursor, cursor);
-  });
+    let valor = e.target.value.replace(/\D/g, '');
+  
+    // Garante pelo menos 3 dígitos (ex: "000")
+    if (valor.length === 0) valor = "000";
+    if (valor.length === 1) valor = "00" + valor;
+    if (valor.length === 2) valor = "0" + valor;
+  
+    const valorNumerico = parseFloat(valor) / 100;
+  
+    const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  
+    e.target.value = valorFormatado;
+  });  
 
   function criarCampoPassageiro() {
     const div = document.createElement("div");

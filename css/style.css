@@ -1,50 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f4f4f8;
+  font-family: 'Poppins', sans-serif;
+  background-color: #f0f2f5;
   margin: 0;
   padding: 2rem;
   color: #333;
+  animation: fadeIn 0.4s ease-in-out;
 }
+
 .container {
   max-width: 800px;
   margin: auto;
   background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  animation: slideUp 0.5s ease-in-out;
 }
+
 h1 {
   text-align: center;
-  color: #423E8B;
+  color: #1d44b8;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
 }
+
 label {
   display: block;
-  margin-top: 1rem;
-  font-weight: bold;
+  margin-top: 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
-input, textarea {
+
+input,
+textarea {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.65rem;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  margin-top: 0.25rem;
-  box-sizing: border-box;
+  border-radius: 8px;
+  margin-top: 0.4rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+  font-size: 1rem;
 }
+
+input:focus,
+textarea:focus {
+  border-color: #1d44b8;
+  box-shadow: 0 0 0 3px rgba(29, 68, 184, 0.2);
+  outline: none;
+  transform: scale(1.01);
+}
+
 button {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   width: 100%;
-  padding: 0.75rem;
-  background-color: #423E8B;
+  padding: 0.9rem;
+  background-color: #1739a1;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.25s ease, transform 0.1s ease;
 }
+
 button:hover {
-  background-color: #322f70;
+  background-color: #0f2a87;
+  transform: scale(1.02);
 }
+
+button:active {
+  transform: scale(0.98);
+}
+
 .autocomplete-suggestions {
   border: 1px solid #ccc;
   max-height: 150px;
@@ -53,56 +87,113 @@ button:hover {
   position: absolute;
   z-index: 9999;
   width: 100%;
-  border-radius: 0 0 6px 6px;
-  box-sizing: border-box;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
+
 .autocomplete-suggestion {
-  padding: 0.5rem;
+  padding: 0.6rem 0.8rem;
   cursor: pointer;
+  font-size: 0.95rem;
 }
+
 .autocomplete-suggestion:hover {
-  background-color: #423E8B;
+  background-color: #1739a1;
   color: white;
 }
+
 .relative {
   position: relative;
 }
+
 .passageiro {
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
   border: 1px dashed #ccc;
   padding: 1rem;
-  border-radius: 6px;
-  background: #fafafa;
+  border-radius: 8px;
+  background: #f9f9f9;
+  position: relative;
+  animation: fadeIn 0.3s ease;
 }
+
 #addPassageiro {
-  background-color: #5a58a5;
-  margin-top: 0.5rem;
+  background-color: #1d44b8;
   font-size: 0.9rem;
+  margin-top: 1rem;
 }
+
 #addPassageiro:hover {
-  background-color: #3d3b85;
-}
-.erro-box {
-  background-color: #ffe0e0;
-  border: 1px solid #cc0000;
-  padding: 0.75rem;
-  border-radius: 6px;
-  color: #cc0000;
-  font-weight: 600;
-  text-align: center;
+  background-color: #0f2a87;
 }
 
 .passageiro .remover {
-  margin-top: 0.5rem;
-  background-color: #eee;
-  color: #444;
+  background-color: #c50000;
+  color: #ffeded;
   border: none;
   padding: 0.4rem 0.8rem;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   float: right;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
 }
+
 .passageiro .remover:hover {
-  background-color: #ffd6d6;
-  color: #b30000;
+  background-color: #a10000;
+}
+
+.erro-box {
+  background-color: #cc0000;
+  border: 1px solid #6d0d0d;
+  padding: 0.9rem;
+  border-radius: 8px;
+  color: #ffe0e0;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* ANIMAÇÕES */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(15px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Grid Responsivo */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+/* Ícones */
+label i {
+  width: 1rem;
+  height: 1rem;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+  color: #1d44b8;
+}
+button i {
+  vertical-align: middle;
+  margin-right: 0.4rem;
+  width: 1rem;
+  height: 1rem;
 }
