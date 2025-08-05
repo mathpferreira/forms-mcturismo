@@ -213,6 +213,44 @@ select:focus {
   transform: scale(1.01);
 }
 
+/* Responsividade para telas pequenas */
+@media screen and (max-width: 480px) {
+  body {
+    padding: 1rem;
+  }
+
+  .container {
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  input,
+  textarea {
+    font-size: 0.95rem;
+    padding: 0.6rem;
+  }
+
+  button {
+    font-size: 0.95rem;
+    padding: 0.75rem;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .autocomplete-suggestions {
+    font-size: 0.85rem;
+  }
+}
+
 /* ======== Estilo do Voucher ======== */
 
 #voucherLayout > div {
