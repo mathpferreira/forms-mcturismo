@@ -2,12 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Gerador de Voucher - MC Viagens</title>
   <link rel="stylesheet" href="css/style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="js/app.js" defer></script>
-  <script src="https://unpkg.com/lucide@latest"></script> <!-- AQUI -->
+  <script src="https://unpkg.com/lucide@latest" defer></script>
 </head>
 <body>
   <div class="container">
@@ -21,9 +22,15 @@
     </div>
     <button id="addPassageiro"><i data-lucide="user-plus"></i> Adicionar Passageiro</button>
 
+    <label for="idioma"><i data-lucide="globe"></i> Idioma do PDF</label>
+    <select id="idioma">
+      <option value="pt">Português</option>
+      <option value="en">Inglês</option>
+    </select>
+
     <div class="grid-2">
       <div>
-        <label><i data-lucide="plane-departure"></i> Origem / Destino (Ida)</label>
+        <label><i data-lucide="plane-takeoff"></i> Origem / Destino (Ida)</label>
         <div class="relative">
           <input type="text" id="ida" autocomplete="off" placeholder="Digite código, cidade ou aeroporto" />
           <div id="ida-suggestions" class="autocomplete-suggestions"></div>
@@ -34,7 +41,7 @@
       </div>
 
       <div>
-        <label><i data-lucide="plane-arrival"></i> Origem / Destino (Volta)</label>
+        <label><i data-lucide="plane-landing"></i> Origem / Destino (Volta)</label>
         <div class="relative">
           <input type="text" id="volta" autocomplete="off" placeholder="Digite código, cidade ou aeroporto" />
           <div id="volta-suggestions" class="autocomplete-suggestions"></div>
@@ -60,15 +67,31 @@
     </div>
 
     <label><i data-lucide="dollar-sign"></i> Valor total (R$)</label>
-    <input type="text" id="valor" placeholder="Ex: 250.00" />
+    <input type="text" id="valor" placeholder="R$ 0,00" />
 
     <div id="erro" style="display:none;" class="erro-box"></div>
 
     <button id="gerarBtn"><i data-lucide="file-text"></i> Gerar PDF</button>
   </div>
 
-  <script>
-    lucide.createIcons();
-  </script>
+<!-- layout oculto -->
+
+  <div id="voucherLayout" style="position: absolute; left: -9999px; top: -9999px;">
+    <div style="width: 800px; font-family: 'Poppins', sans-serif; padding: 40px; border: 1px solid #ccc; border-radius: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <img src="data:image/png;base64,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" style="height: 60px;" />
+        <h2 style="color: #1739a1;">Confirmação de Reserva</h2>
+      </div>
+  
+      <div id="voucherContent" style="font-size: 14px; color: #333; line-height: 1.6;">
+        <!-- conteúdo preenchido via JS -->
+      </div>
+  
+      <div style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 12px; color: #666;">
+        Emitido em: <span id="emissaoData"></span><br>
+        Contato: mcturismoviagens@gmail.com | (11) 94860-0868
+      </div>
+    </div>
+  </div>  
 </body>
 </html>

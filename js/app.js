@@ -1,5 +1,44 @@
+// Novo app.js com suporte a idioma (Português/Inglês)
 document.addEventListener('DOMContentLoaded', () => {
   let airports = {};
+
+  lucide.createIcons(); // <- chama aqui para garantir que os ícones serão aplicados
+
+  const traducoes = {
+    pt: {
+      passageiros: "Passageiros",
+      viagem: "Dados da Viagem",
+      ida: "Ida",
+      volta: "Volta",
+      dataIda: "Data/Hora Ida",
+      dataVolta: "Data/Hora Volta",
+      hospedagem: "Hospedagem",
+      hotel: "Hotel",
+      checkin: "Check-in",
+      checkout: "Check-out",
+      pagamento: "Pagamento",
+      valor: "Valor Total",
+      contato: "Contato",
+      emitido: "Emitido em"
+    },
+    en: {
+      passageiros: "Passengers",
+      viagem: "Trip Details",
+      ida: "Departure",
+      volta: "Return",
+      dataIda: "Departure Date/Time",
+      dataVolta: "Return Date/Time",
+      hospedagem: "Accommodation",
+      hotel: "Hotel",
+      checkin: "Check-in",
+      checkout: "Check-out",
+      pagamento: "Payment",
+      valor: "Total Amount",
+      contato: "Contact",
+      emitido: "Issued on"
+    }
+  };
+  
 
   async function carregarAeroportos() {
     try {
@@ -63,6 +102,24 @@ document.addEventListener('DOMContentLoaded', () => {
     erro.style.display = "none";
   }
 
+  function formatarData(dataISO) {
+    if (!dataISO) return "";
+    const [ano, mes, diaHora] = dataISO.split("-");
+    const [dia, hora] = diaHora.split("T");
+    return `${dia}/${mes}/${ano}${hora ? ` ${hora}` : ''}`;
+  }
+
+  function gerarDataHoraAtual() {
+    const agora = new Date();
+    return agora.toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
   function validarCampos() {
     const nomes = document.querySelectorAll(".nome");
     const ida = document.getElementById("ida").value.trim();
@@ -99,73 +156,77 @@ document.addEventListener('DOMContentLoaded', () => {
     limparErro();
     return true;
   }
-
+  
   async function gerarPDF() {
     if (!validarCampos()) return;
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
+  
+    const idioma = document.getElementById("idioma").value;
+    const t = traducoes[idioma] || traducoes.pt;
+  
     const nomes = [...document.querySelectorAll(".nome")].map(el => el.value.trim());
     const ida = document.getElementById("ida").value;
-    const dataIda = document.getElementById("dataIda").value;
+    const dataIda = formatarData(document.getElementById("dataIda").value);
     const volta = document.getElementById("volta").value;
-    const dataVolta = document.getElementById("dataVolta").value;
+    const dataVolta = formatarData(document.getElementById("dataVolta").value);
     const hotel = document.getElementById("hotel").value;
-    const checkin = document.getElementById("checkin").value;
-    const checkout = document.getElementById("checkout").value;
-
-    const valorRaw = parseFloat(document.getElementById("valor").value.replace('R$', '').replace(',', '.'));
-    const valorFormatado = (!isNaN(valorRaw)) ? valorRaw.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : "R$ 0,00";
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(66, 62, 139);
-    doc.text("MC VIAGENS - VOUCHER DE RESERVA", 20, 20);
-
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.setFont("helvetica", "normal");
-    nomes.forEach((n, i) => {
-      doc.text(`Passageiro ${i + 1}: ${n}`, 20, 35 + i * 7);
-    });
-
-    const offset = 35 + nomes.length * 7 + 5;
-    doc.text(`Ida: ${ida}`, 20, offset);
-    doc.text(`Data/Hora Ida: ${dataIda}`, 20, offset + 7);
-    doc.text(`Volta: ${volta}`, 20, offset + 14);
-    doc.text(`Data/Hora Volta: ${dataVolta}`, 20, offset + 21);
-    doc.text(`Hotel: ${hotel}`, 20, offset + 31);
-    doc.text(`Check-in: ${checkin}`, 20, offset + 38);
-    doc.text(`Check-out: ${checkout}`, 20, offset + 45);
-    doc.text(`Valor total: ${valorFormatado}`, 20, offset + 55);
-
-    doc.setTextColor(120);
-    doc.setFontSize(10);
-    doc.text("Contato: mcturismoviagens@gmail.com | (11) 94860-0868", 20, offset + 65);
-
-    doc.save('voucher.pdf');
-  }
+    const checkin = formatarData(document.getElementById("checkin").value);
+    const checkout = formatarData(document.getElementById("checkout").value);
+    const valor = document.getElementById("valor").value;
+    const emissao = gerarDataHoraAtual();
+  
+    // Preenche o conteúdo do layout oculto
+    document.getElementById("emissaoData").innerText = emissao;
+    document.getElementById("voucherContent").innerHTML = `
+      <h3>🧍 Passageiros</h3>
+      <ul>${nomes.map(n => `<li>${n}</li>`).join('')}</ul>
+  
+      <h3>✈️ Dados da Viagem</h3>
+      <p><strong>Ida:</strong> ${ida}</p>
+      <p><strong>Data/Hora Ida:</strong> ${dataIda}</p>
+      ${volta ? `<p><strong>Volta:</strong> ${volta}</p>` : ""}
+      ${dataVolta ? `<p><strong>Data/Hora Volta:</strong> ${dataVolta}</p>` : ""}
+  
+      <h3>🏨 Hospedagem</h3>
+      ${hotel ? `<p><strong>Hotel:</strong> ${hotel}</p>` : ""}
+      ${checkin ? `<p><strong>Check-in:</strong> ${checkin}</p>` : ""}
+      ${checkout ? `<p><strong>Check-out:</strong> ${checkout}</p>` : ""}
+  
+      <h3>💰 Pagamento</h3>
+      <p><strong>Valor total:</strong> ${valor}</p>
+    `;
+  
+    // Renderiza o layout invisível
+    const layout = document.getElementById("voucherLayout");
+    layout.style.display = "block";
+  
+    // Gera imagem do conteúdo
+    const canvas = await html2canvas(layout, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+  
+    // Aqui está a CORREÇÃO FINAL: importar jsPDF corretamente
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "pt", "a4");
+  
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+  
+    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pdfHeight);
+    pdf.save("voucher.pdf");
+  
+    layout.style.display = "none";
+  }  
 
   const valorInput = document.getElementById("valor");
-
   valorInput.addEventListener("input", (e) => {
     let valor = e.target.value.replace(/\D/g, '');
-  
-    // Garante pelo menos 3 dígitos (ex: "000")
     if (valor.length === 0) valor = "000";
     if (valor.length === 1) valor = "00" + valor;
     if (valor.length === 2) valor = "0" + valor;
-  
     const valorNumerico = parseFloat(valor) / 100;
-  
-    const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
-  
+    const valorFormatado = valorNumerico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     e.target.value = valorFormatado;
-  });  
+  });
 
   function criarCampoPassageiro() {
     const div = document.createElement("div");
@@ -191,11 +252,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("passageiros").appendChild(novo);
   });
 
-  // Substitui o primeiro passageiro para já ter botão de remover também
   const primeiro = document.querySelector(".passageiro");
   const corrigido = criarCampoPassageiro();
   primeiro.replaceWith(corrigido);
-
 
   carregarAeroportos();
   autocomplete(document.getElementById("ida"), document.getElementById("ida-suggestions"));
