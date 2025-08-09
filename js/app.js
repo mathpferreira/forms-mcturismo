@@ -156,14 +156,15 @@ document.addEventListener('DOMContentLoaded', () => {
     limparErro();
     return true;
   }
-  
+
   async function gerarPDF() {
     if (!validarCampos()) return;
   
     const idioma = document.getElementById("idioma").value;
     const t = traducoes[idioma] || traducoes.pt;
   
-    const nomes = [...document.querySelectorAll(".nome")].map(el => el.value.trim());
+    const nomes = [...document.querySelectorAll(".nome")].map(el => el.value.trim().toUpperCase()); // CAPS LOCK
+  
     const ida = document.getElementById("ida").value;
     const dataIda = formatarData(document.getElementById("dataIda").value);
     const volta = document.getElementById("volta").value;
@@ -174,49 +175,87 @@ document.addEventListener('DOMContentLoaded', () => {
     const valor = document.getElementById("valor").value;
     const emissao = gerarDataHoraAtual();
   
-    // Preenche o conteúdo do layout oculto
     document.getElementById("emissaoData").innerText = emissao;
-    document.getElementById("voucherContent").innerHTML = `
-      <h3>🧍 Passageiros</h3>
-      <ul>${nomes.map(n => `<li>${n}</li>`).join('')}</ul>
   
-      <h3>✈️ Dados da Viagem</h3>
-      <p><strong>Ida:</strong> ${ida}</p>
-      <p><strong>Data/Hora Ida:</strong> ${dataIda}</p>
-      ${volta ? `<p><strong>Volta:</strong> ${volta}</p>` : ""}
-      ${dataVolta ? `<p><strong>Data/Hora Volta:</strong> ${dataVolta}</p>` : ""}
-  
-      <h3>🏨 Hospedagem</h3>
-      ${hotel ? `<p><strong>Hotel:</strong> ${hotel}</p>` : ""}
-      ${checkin ? `<p><strong>Check-in:</strong> ${checkin}</p>` : ""}
-      ${checkout ? `<p><strong>Check-out:</strong> ${checkout}</p>` : ""}
-  
-      <h3>💰 Pagamento</h3>
-      <p><strong>Valor total:</strong> ${valor}</p>
+    // Tabela de passageiros
+    const tabelaPassageiros = `
+      <h3>Passageiros</h3>
+      <table style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th style="border:1px solid #ccc; padding:5px; text-align:left;">Nome</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${nomes.map(n => `<tr><td style="border:1px solid #ccc; padding:5px;">${n}</td></tr>`).join('')}
+        </tbody>
+      </table>
     `;
   
-    // Renderiza o layout invisível
-    const layout = document.getElementById("voucherLayout");
-    layout.style.display = "block";
+    // Conteúdo do voucher
+    document.getElementById("voucherContent").innerHTML = `
+      ${tabelaPassageiros}
   
-    // Gera imagem do conteúdo
-    const canvas = await html2canvas(layout, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
+      <h3> ${t.viagem}</h3>
+      <p><strong>${t.ida}:</strong> ${ida}</p>
+      <p><strong>${t.dataIda}:</strong> ${dataIda}</p>
+      ${volta ? `<p><strong>${t.volta}:</strong> ${volta}</p>` : ""}
+      ${dataVolta ? `<p><strong>${t.dataVolta}:</strong> ${dataVolta}</p>` : ""}
   
-    // Aqui está a CORREÇÃO FINAL: importar jsPDF corretamente
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("p", "pt", "a4");
+      <h3>${t.hospedagem}</h3>
+      ${hotel ? `<p><strong>${t.hotel}:</strong> ${hotel}</p>` : ""}
+      ${checkin ? `<p><strong>${t.checkin}:</strong> ${checkin}</p>` : ""}
+      ${checkout ? `<p><strong>${t.checkout}:</strong> ${checkout}</p>` : ""}
   
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+      <h3>${t.pagamento}</h3>
+      <p><strong>${t.valor}:</strong> ${valor}</p>
+    `;
   
-    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pdfHeight);
-    pdf.save("voucher.pdf");
-  
-    layout.style.display = "none";
-  }  
+   // Gerar QR Code seguro
+   const qrcodeContainer = document.getElementById("qrcode");
+   qrcodeContainer.innerHTML = "";
+   new QRCode(qrcodeContainer, {
+     text: "https://wa.me/5511948600868",
+     width: 90,
+     height: 90,
+     correctLevel: QRCode.CorrectLevel.H
+   });
+   
+   // Converte QR Code para imagem base64
+   await new Promise(res => setTimeout(res, 300)); // aguarda render
+   const qrCanvas = qrcodeContainer.querySelector("canvas");
+   if (qrCanvas) {
+     const dataUrl = qrCanvas.toDataURL("image/png");
+     const img = document.createElement("img");
+     img.src = dataUrl;
+     qrcodeContainer.innerHTML = "";
+     qrcodeContainer.appendChild(img);
+   }
+   
+   // Aguarda um pouquinho para garantir a atualização da imagem no layout
+   await new Promise(res => setTimeout(res, 100));
+   
+   // Captura para PDF
+   const layout = document.getElementById("voucherLayout");
+   layout.style.display = "block";
+   
+   const canvas = await html2canvas(layout, { scale: 2, useCORS: true });
+   const imgData = canvas.toDataURL("image/png");
+   
+   const { jsPDF } = window.jspdf;
+   const pdf = new jsPDF("p", "pt", "a4");
+   
+   const pageWidth = pdf.internal.pageSize.getWidth();
+   const imgProps = pdf.getImageProperties(imgData);
+   const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+   
+   pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pdfHeight);
+   pdf.save("voucher.pdf");
 
+   layout.style.display = "none";
+ }
+
+   // Formata valor em tempo real
   const valorInput = document.getElementById("valor");
   valorInput.addEventListener("input", (e) => {
     let valor = e.target.value.replace(/\D/g, '');
