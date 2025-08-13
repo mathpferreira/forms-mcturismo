@@ -239,27 +239,35 @@ document.addEventListener('DOMContentLoaded', () => {
    const layout = document.getElementById("voucherLayout");
    layout.style.display = "block";
    
-   const canvas = await html2canvas(layout, { 
-    scale: 2, 
-    useCORS: true, 
-    scrollY: 0, // força ignorar o scroll atual
-    windowWidth: layout.scrollWidth, 
-    windowHeight: layout.scrollHeight 
-  });  
-   const imgData = canvas.toDataURL("image/png");
-   
-   const { jsPDF } = window.jspdf;
-   const pdf = new jsPDF("p", "pt", "a4");
-   
-   const pageWidth = pdf.internal.pageSize.getWidth();
-   const imgProps = pdf.getImageProperties(imgData);
-   const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
-   
-   pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pdfHeight);
-   pdf.save("voucher.pdf");
+    // Garante que o conteúdo inteiro fique visível para captura
+    const originalOverflow = layout.style.overflow;
+    layout.style.overflow = "visible";
+    layout.style.display = "block";
 
-   layout.style.display = "none";
- }
+    // Captura considerando a altura real do elemento, não só o viewport
+    const canvas = await html2canvas(layout, { 
+        scale: 2, 
+        useCORS: true, 
+        scrollY: 0, 
+        windowWidth: layout.scrollWidth, 
+        windowHeight: layout.scrollHeight 
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "pt", "a4");
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+
+    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pdfHeight);
+    pdf.save("voucher.pdf");
+
+    // Restaura estilo original
+    layout.style.overflow = originalOverflow;
+    layout.style.display = "none";
+}
 
    // Formata valor em tempo real
   const valorInput = document.getElementById("valor");
