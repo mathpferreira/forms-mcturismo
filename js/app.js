@@ -239,7 +239,13 @@ document.addEventListener('DOMContentLoaded', () => {
    const layout = document.getElementById("voucherLayout");
    layout.style.display = "block";
    
-   const canvas = await html2canvas(layout, { scale: 2, useCORS: true });
+   const canvas = await html2canvas(layout, { 
+    scale: 2, 
+    useCORS: true, 
+    scrollY: 0, // força ignorar o scroll atual
+    windowWidth: layout.scrollWidth, 
+    windowHeight: layout.scrollHeight 
+  });  
    const imgData = canvas.toDataURL("image/png");
    
    const { jsPDF } = window.jspdf;
