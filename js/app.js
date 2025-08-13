@@ -216,8 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
    qrcodeContainer.innerHTML = "";
    new QRCode(qrcodeContainer, {
      text: "https://wa.me/5511948600868",
-     width: 90,
-     height: 90,
+     width: 80,
+     height: 80,
      correctLevel: QRCode.CorrectLevel.H
    });
    
