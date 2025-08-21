@@ -1,6 +1,6 @@
 // Novo app.js com suporte a idioma (Português/Inglês)
 document.addEventListener('DOMContentLoaded', () => {
-  let airports = {};
+  let airports = []; // agora será uma lista apenas de aeroportos com IATA
 
   lucide.createIcons(); // <- chama aqui para garantir que os ícones serão aplicados
 
@@ -39,41 +39,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   
-
+  // Carrega aeroportos mas mantém apenas os que têm código IATA
   async function carregarAeroportos() {
     try {
       const response = await fetch('https://raw.githubusercontent.com/mwgg/Airports/master/airports.json');
-      airports = await response.json();
+      const airportsData = await response.json();
+
+      // Filtra só os que possuem IATA válido
+      airports = Object.values(airportsData)
+        .filter(a => a.iata && a.iata.trim() !== "")
+        .map(a => ({
+          iata: a.iata,
+          nome: a.name,
+          cidade: a.city,
+          pais: a.country
+        }));
+
     } catch (e) {
       mostrarErro('Erro ao carregar dados de aeroportos.');
     }
   }
 
+  // Função de autocomplete (agora busca só por IATA, nome, cidade, país)
   function autocomplete(inputElem, suggestionsElem) {
     inputElem.addEventListener('input', () => {
       const val = inputElem.value.trim().toLowerCase();
       suggestionsElem.innerHTML = '';
-      if (!val || Object.keys(airports).length === 0) {
+      if (!val || airports.length === 0) {
         suggestionsElem.style.display = 'none';
         return;
       }
 
-      const resultados = Object.entries(airports).filter(([code, info]) => {
-        const searchable = [code, info.name, info.city, info.country].join(' ').toLowerCase();
+      const resultados = airports
+      .filter(info => {
+        const searchable = [info.iata, info.nome, info.cidade, info.pais].join(' ').toLowerCase();
         return searchable.includes(val);
-      }).slice(0, 10);
+      })
+      .sort((a, b) => {
+        // 1. Se o IATA for exatamente igual ao que foi digitado → sobe para o topo
+        if (a.iata.toLowerCase() === val && b.iata.toLowerCase() !== val) return -1;
+        if (b.iata.toLowerCase() === val && a.iata.toLowerCase() !== val) return 1;
+    
+        // 2. Se o IATA começar com o que foi digitado → vem antes dos outros
+        if (a.iata.toLowerCase().startsWith(val) && !b.iata.toLowerCase().startsWith(val)) return -1;
+        if (b.iata.toLowerCase().startsWith(val) && !a.iata.toLowerCase().startsWith(val)) return 1;
+    
+        // 3. Caso contrário, ordena por nome de aeroporto
+        return a.nome.localeCompare(b.nome);
+      })
+      .slice(0, 10);    
 
       if (resultados.length === 0) {
         suggestionsElem.style.display = 'none';
         return;
       }
 
-      resultados.forEach(([code, info]) => {
+      resultados.forEach(info => {
         const div = document.createElement('div');
         div.classList.add('autocomplete-suggestion');
-        div.textContent = `${code} - ${info.name} (${info.city}, ${info.country})`;
+        div.textContent = `${info.iata} - ${info.nome} (${info.cidade}, ${info.pais})`;
         div.onclick = () => {
-          inputElem.value = `${code} - ${info.name}`;
+          inputElem.value = `${info.iata} - ${info.nome}`;
           suggestionsElem.innerHTML = '';
           suggestionsElem.style.display = 'none';
         };
@@ -287,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
     div.innerHTML = `
       <label>Nome do Passageiro</label>
       <input type="text" class="nome" />
-      <button type="button" class="remover">🗑️ Remover</button>
+      <button type="button" class="remover">Remover</button>
     `;
     div.querySelector(".remover").addEventListener("click", () => {
       const todos = document.querySelectorAll(".passageiro");
