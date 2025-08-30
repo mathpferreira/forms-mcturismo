@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hotel: "Hotel",
       checkin: "Check-in",
       checkout: "Check-out",
+      localizador:"Localizador",
       pagamento: "Pagamento",
       valor: "Valor Total",
       contato: "Contato",
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hotel: "Hotel",
       checkin: "Check-in",
       checkout: "Check-out",
+      localizador:"locator",
       pagamento: "Payment",
       valor: "Total Amount",
       contato: "Contact",
@@ -146,6 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+// Preenchimento obrigatório
+
   function validarCampos() {
     const nomes = document.querySelectorAll(".nome");
     const ida = document.getElementById("ida").value.trim();
@@ -198,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hotel = document.getElementById("hotel").value;
     const checkin = formatarData(document.getElementById("checkin").value);
     const checkout = formatarData(document.getElementById("checkout").value);
+    const localizador = document.getElementById("localizador").value;
     const valor = document.getElementById("valor").value;
     const emissao = gerarDataHoraAtual();
   
@@ -232,6 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ${hotel ? `<p><strong>${t.hotel}:</strong> ${hotel}</p>` : ""}
       ${checkin ? `<p><strong>${t.checkin}:</strong> ${checkin}</p>` : ""}
       ${checkout ? `<p><strong>${t.checkout}:</strong> ${checkout}</p>` : ""}
+      ${checkout ? `<p><strong>${t.checkout}:</strong> ${checkout}</p>` : ""}
+      ${localizador ? `<p><strong>${t.localizador}:</strong> ${localizador}</p>` : ""}
   
       <h3>${t.pagamento}</h3>
       <p><strong>${t.valor}:</strong> ${valor}</p>

@@ -54,7 +54,7 @@
     </div>
 
     <label><i data-lucide="hotel"></i> Hotel</label>
-    <input type="text" id="hotel" />
+    <input type="text" id="hotel"  placeholder="Digite o nome do hotel" />
 
     <div class="grid-2">
       <div>
@@ -105,14 +105,5 @@
     </div>    
   </div>
 </div>
-
-  <!-- Contador invisível -->
-  <script>
-    fetch("https://api.counterapi.dev/hit/voucher-sogra-123456/visitas")
-      .then(res => res.json())
-      .then(res => {
-        console.log("Visitas na página até agora:", res.value);
-      });
-  </script>
 </body>
 </html>
